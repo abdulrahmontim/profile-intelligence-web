@@ -1,0 +1,35 @@
+name: Web Portal CI
+
+on:
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  lint-and-test:
+    runs-on: ubuntu-latest
+
+    env:
+      DEBUG: True
+      DJANGO_SECRET_KEY: test-secret
+      API_BASE_URL: http://localhost:8000
+      ALLOWED_HOSTS: localhost
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Lint
+        run: |
+          pip install flake8
+          flake8 web/ --max-line-length=120
+
+      - name: Check Django
+        run: python manage.py check
