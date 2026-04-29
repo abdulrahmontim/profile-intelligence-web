@@ -1,0 +1,9 @@
+{% extends "web/base.html" %}
+{% block content %}
+<h2>Dashboard</h2>
+<p>Welcome back, @{{ username }}</p>
+<div style="background:white;padding:2rem;border-radius:8px;display:inline-block;">
+    <h3>Total Profiles</h3>
+    <p style="font-size:3rem;margin:0;">{{ total_profiles }}</p>
+</div>
+{% endblock %}
