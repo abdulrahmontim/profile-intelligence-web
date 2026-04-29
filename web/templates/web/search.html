@@ -1,0 +1,24 @@
+{% extends "web/base.html" %}
+{% block content %}
+<h2>Search Profiles</h2>
+<form method="GET">
+    <input name="q" placeholder="e.g. young males from Nigeria" value="{{ query }}" style="width:300px;">
+    <button type="submit" class="btn">Search</button>
+</form>
+<br>
+{% if results %}
+<table>
+    <tr><th>Name</th><th>Gender</th><th>Age</th><th>Country</th></tr>
+    {% for p in results %}
+    <tr>
+        <td>{{ p.name }}</td>
+        <td>{{ p.gender }}</td>
+        <td>{{ p.age }}</td>
+        <td>{{ p.country_name }}</td>
+    </tr>
+    {% endfor %}
+</table>
+{% elif query %}
+<p>No results for "{{ query }}"</p>
+{% endif %}
+{% endblock %}
