@@ -5,7 +5,7 @@
 This repository contains the **Insighta Web Portal**, a Django-based
 frontend that connects to the Insighta backend API.
 
--   Built with **Django templates (no React)**
+-   Built with **Django templates**
 -   Uses **session-based authentication**
 -   Integrates with backend via **HTTP (httpx)**
 -   Supports **GitHub OAuth login**
