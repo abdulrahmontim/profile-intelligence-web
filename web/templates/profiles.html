@@ -1,0 +1,33 @@
+{% extends "web/base.html" %}
+{% block content %}
+<h2>Profiles</h2>
+
+<form method="GET">
+    <input name="gender" placeholder="Gender" value="{{ request.GET.gender }}">
+    <input name="country" placeholder="Country" value="{{ request.GET.country }}">
+    <input name="age_group" placeholder="Age Group" value="{{ request.GET.age_group }}">
+    <button type="submit" class="btn">Filter</button>
+</form>
+<br>
+
+<table>
+    <tr><th>Name</th><th>Gender</th><th>Age</th><th>Country</th><th></th></tr>
+    {% for p in data.data %}
+    <tr>
+        <td>{{ p.name }}</td>
+        <td>{{ p.gender }}</td>
+        <td>{{ p.age }}</td>
+        <td>{{ p.country_name }}</td>
+        <td><a href="/profiles/{{ p.id }}">View</a></td>
+    </tr>
+    {% empty %}
+    <tr><td colspan="5">No profiles found.</td></tr>
+    {% endfor %}
+</table>
+
+<div style="margin-top:1rem;">
+    {% if data.links.prev %}<a href="{{ data.links.prev }}" class="btn">Previous</a>{% endif %}
+    Page {{ data.page }} of {{ data.total_pages }}
+    {% if data.links.next %}<a href="{{ data.links.next }}" class="btn">Next</a>{% endif %}
+</div>
+{% endblock %}
