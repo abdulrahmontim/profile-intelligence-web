@@ -2,6 +2,8 @@ from django.urls import path
 from . import views
 
 urlpatterns = [
+    
+    path("", views.login, name="login"),
     path("login", views.login, name="login"),
     path("auth/github", views.github_redirect, name="github_redirect"),
     path("auth/callback", views.auth_callback, name="auth_callback"),
