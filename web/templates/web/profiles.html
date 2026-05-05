@@ -26,8 +26,8 @@
 </table>
 
 <div style="margin-top:1rem;">
-    {% if data.links.prev %}<a href="{{ data.links.prev }}" class="btn">Previous</a>{% endif %}
+    {% if prev_url %}<a href="{{ prev_url }}" class="btn">Previous</a>{% endif %}
     Page {{ data.page }} of {{ data.total_pages }}
-    {% if data.links.next %}<a href="{{ data.links.next }}" class="btn">Next</a>{% endif %}
+    {% if next_url %}<a href="{{ next_url }}" class="btn">Next</a>{% endif %}
 </div>
 {% endblock %}

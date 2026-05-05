@@ -87,8 +87,24 @@ def profile_list(request):
     params.setdefault("limit", 10)
 
     response = api_get(request, "/api/profiles", params)
+    if response.status_code == 401:
+        if not refresh_session(request):
+            return redirect("/login")
+        response = api_get(request, "/api/profiles", params)
+
     data = response.json()
-    return render(request, "web/profiles.html", {"data": data})
+    current_page = int(params["page"])
+    total_pages = data.get("total_pages", 1)
+
+    def build_url(page):
+        updated = {**params, "page": page}
+        return "/profiles?" + "&".join(f"{k}={v}" for k, v in updated.items())
+
+    return render(request, "web/profiles.html", {
+        "data": data,
+        "prev_url": build_url(current_page - 1) if current_page > 1 else None,
+        "next_url": build_url(current_page + 1) if current_page < total_pages else None,
+    })
 
 
 def profile_detail(request, profile_id):
