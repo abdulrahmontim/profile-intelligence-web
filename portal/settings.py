@@ -71,6 +71,10 @@ TEMPLATES = [
     },
 ]
 
+CSRF_TRUSTED_ORIGINS = [
+    "https://profile-intelligence-web.up.railway.app",
+]
+
 WSGI_APPLICATION = 'portal.wsgi.application'
 
 SESSION_ENGINE = "django.contrib.sessions.backends.db"
