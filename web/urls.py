@@ -12,4 +12,6 @@ urlpatterns = [
     path("profiles/<str:profile_id>", views.profile_detail, name="profile_detail"),
     path("search", views.search, name="search"),
     path("account", views.account, name="account"),
+    path("profiles/import", views.profile_import, name="profile_import"),
+    path("profiles/create", views.profile_create, name="profile_create")
 ]

@@ -1,6 +1,12 @@
 {% extends "web/base.html" %}
 {% block content %}
 <h2>Account</h2>
-<p>Username: @{{ username }}</p>
-<a href="/logout" class="btn">Logout</a>
+<div style="background:white;padding:2rem;border-radius:8px;max-width:400px;">
+    <p><strong>Username:</strong> @{{ username }}</p>
+    <p><strong>Role:</strong>
+        <span class="badge {% if role == 'analyst' %}analyst{% endif %}">{{ role }}</span>
+    </p>
+    <br>
+    <a href="/logout" class="btn danger">Logout</a>
+</div>
 {% endblock %}
