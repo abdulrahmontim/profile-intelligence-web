@@ -1,35 +1,120 @@
-<!DOCTYPE html>
+<!doctype html>
 <html>
-<head>
-    <meta charset="UTF-8">
+  <head>
+    <meta charset="UTF-8" />
     <title>Insighta Labs+</title>
     <style>
-        body { font-family: sans-serif; margin: 0; background: #f5f5f5; }
-        nav { background: #1a1a2e; color: white; padding: 1rem 2rem; display: flex; justify-content: space-between; }
-        nav a { color: white; text-decoration: none; margin-left: 1rem; }
-        .container { max-width: 1100px; margin: 2rem auto; padding: 0 1rem; }
-        table { width: 100%; border-collapse: collapse; background: white; }
-        th, td { padding: 0.75rem; text-align: left; border-bottom: 1px solid #ddd; }
-        th { background: #1a1a2e; color: white; }
-        .btn { padding: 0.5rem 1rem; background: #1a1a2e; color: white; border: none; cursor: pointer; text-decoration: none; border-radius: 4px; }
-        input, select { padding: 0.4rem; margin-right: 0.5rem; border: 1px solid #ccc; border-radius: 4px; }
+      body {
+        font-family: sans-serif;
+        margin: 0;
+        background: #f5f5f5;
+      }
+      nav {
+        background: #1a1a2e;
+        color: white;
+        padding: 1rem 2rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+      nav a {
+        color: white;
+        text-decoration: none;
+        margin-left: 1rem;
+      }
+      .badge {
+        background: #e74c3c;
+        color: white;
+        padding: 2px 8px;
+        border-radius: 10px;
+        font-size: 0.75rem;
+        margin-left: 0.5rem;
+      }
+      .badge.analyst {
+        background: #27ae60;
+      }
+      .container {
+        max-width: 1100px;
+        margin: 2rem auto;
+        padding: 0 1rem;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        background: white;
+      }
+      th,
+      td {
+        padding: 0.75rem;
+        text-align: left;
+        border-bottom: 1px solid #ddd;
+      }
+      th {
+        background: #1a1a2e;
+        color: white;
+      }
+      .btn {
+        padding: 0.5rem 1rem;
+        background: #1a1a2e;
+        color: white;
+        border: none;
+        cursor: pointer;
+        text-decoration: none;
+        border-radius: 4px;
+        display: inline-block;
+      }
+      .btn.danger {
+        background: #e74c3c;
+      }
+      .btn.success {
+        background: #27ae60;
+      }
+      input,
+      select {
+        padding: 0.4rem;
+        margin-right: 0.5rem;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+      }
+      .alert {
+        padding: 0.75rem 1rem;
+        border-radius: 4px;
+        margin-bottom: 1rem;
+      }
+      .alert.success {
+        background: #d4edda;
+        color: #155724;
+      }
+      .alert.error {
+        background: #f8d7da;
+        color: #721c24;
+      }
     </style>
-</head>
-<body>
+  </head>
+  <body>
     {% if request.session.username %}
     <nav>
-        <span>Insighta Labs+</span>
-        <div>
-            <a href="/dashboard">Dashboard</a>
-            <a href="/profiles">Profiles</a>
-            <a href="/search">Search</a>
-            <a href="/account">@{{ request.session.username }}</a>
-            <a href="/logout">Logout</a>
-        </div>
+      <span style="font-weight: bold; font-size: 1.1rem">Insighta Labs+</span>
+      <div>
+        <a href="/dashboard">Dashboard</a>
+        <a href="/profiles">Profiles</a>
+        <a href="/search">Search</a>
+        {% if request.session.role == "admin" %}
+        <a href="/profiles/create">Create</a>
+        <a href="/profiles/import">Import</a>
+        {% endif %}
+        <a href="/account">
+          @{{ request.session.username }}
+          <span
+            class="badge {% if request.session.role == 'analyst' %}analyst{% endif %}"
+          >
+            {{ request.session.role }}
+          </span>
+        </a>
+        <a href="/logout">Logout</a>
+      </div>
     </nav>
     {% endif %}
-    <div class="container">
-        {% block content %}{% endblock %}
-    </div>
-</body>
+    <div class="container">{% block content %}{% endblock %}</div>
+  </body>
 </html>

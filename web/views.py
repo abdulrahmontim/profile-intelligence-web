@@ -2,11 +2,21 @@ import httpx
 from django.shortcuts import render, redirect
 from django.conf import settings
 from django.views.decorators.http import require_GET, require_POST
+from django.views.decorators.csrf import csrf_exempt
+import httpx
 import pycountry
+
 
 API = settings.API_BASE_URL
 
 # Create your views here.
+
+def require_admin(view_func):
+    def wrapper(request, *args, **kwargs):
+        if request.session.get("role") != "admin":
+            return redirect("/dashboard")
+        return view_func(request, *args, **kwargs)
+    return wrapper
 
 
 def api_get(request, path, params=None):
@@ -49,6 +59,7 @@ def auth_callback(request):
     access_token = request.GET.get("access_token")
     refresh_token = request.GET.get("refresh_token")
     username = request.GET.get("username")
+    role = request.GET.get("role")
 
     if not access_token:
         return redirect("/login?error=auth_failed")
@@ -56,6 +67,7 @@ def auth_callback(request):
     request.session["access_token"] = access_token
     request.session["refresh_token"] = refresh_token
     request.session["username"] = username
+    request.session["role"] = role
 
     return redirect("/dashboard")
 
@@ -144,4 +156,78 @@ def search(request):
 def account(request):
     return render(request, "web/account.html", {
         "username": request.session.get("username"),
+        "role": request.session.get("role"),
+    })
+    
+    
+@require_admin
+def profile_import(request):
+    result = None
+    message = None
+    message_type = None
+
+    if request.method == "POST":
+        file = request.FILES.get("file")
+        if not file:
+            message = "No file selected"
+            message_type = "error"
+        else:
+            token = request.session.get("access_token")
+            response = httpx.post(
+                f"{API}/api/profiles/import/",
+                files={"file": (file.name, file.read(), "text/csv")},
+                headers={
+                    "Authorization": f"Bearer {token}",
+                    "X-API-Version": "1",
+                },
+                timeout=300,
+            )
+            if response.status_code == 200:
+                result = response.json()
+            else:
+                message = "Upload failed. Please try again."
+                message_type = "error"
+
+    return render(request, "web/import.html", {
+        "result": result,
+        "message": message,
+        "message_type": message_type,
+    })
+
+
+@require_admin
+def profile_create(request):
+    profile = None
+    message = None
+    message_type = None
+
+    if request.method == "POST":
+        name = request.POST.get("name", "").strip()
+        if not name:
+            message = "Name is required"
+            message_type = "error"
+        else:
+            token = request.session.get("access_token")
+            response = httpx.post(
+                f"{API}/api/profiles/",
+                json={"name": name},
+                headers={
+                    "Authorization": f"Bearer {token}",
+                    "X-API-Version": "1",
+                },
+                timeout=30,
+            )
+            data = response.json()
+            if response.status_code in (200, 201):
+                profile = data.get("data")
+                message = "Profile created successfully"
+                message_type = "success"
+            else:
+                message = data.get("message", "Failed to create profile")
+                message_type = "error"
+
+    return render(request, "web/create_profile.html", {
+        "profile": profile,
+        "message": message,
+        "message_type": message_type,
     })

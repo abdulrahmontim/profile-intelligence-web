@@ -1,0 +1,35 @@
+{% extends "web/base.html" %}
+{% block content %}
+<h2>Import Profiles</h2>
+
+{% if message %}
+<div class="alert {{ message_type }}">{{ message }}</div>
+{% endif %}
+
+{% if result %}
+<div class="alert success">
+    <strong>Upload complete</strong><br>
+    Total rows: {{ result.total_rows }}<br>
+    Inserted: {{ result.inserted }}<br>
+    Skipped: {{ result.skipped }}<br>
+    {% if result.reasons %}
+    <br><strong>Skip reasons:</strong><br>
+    {% for key, val in result.reasons.items %}
+    {{ key }}: {{ val }}<br>
+    {% endfor %}
+    {% endif %}
+</div>
+{% endif %}
+
+<div style="background:white;padding:2rem;border-radius:8px;max-width:500px;">
+    <p>Upload a CSV file with up to 500,000 rows.</p>
+    <p><strong>Required columns:</strong> name, gender, age, age_group, country_id, country_name</p>
+    <p><strong>Optional columns:</strong> gender_probability, country_probability</p>
+    <br>
+    <form method="POST" enctype="multipart/form-data">
+        {% csrf_token %}
+        <input type="file" name="file" accept=".csv" required style="margin-bottom:1rem;display:block;">
+        <button type="submit" class="btn success">Upload CSV</button>
+    </form>
+</div>
+{% endblock %}
