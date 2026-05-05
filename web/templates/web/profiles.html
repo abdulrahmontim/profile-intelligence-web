@@ -3,9 +3,24 @@
 <h2>Profiles</h2>
 
 <form method="GET">
-    <input name="gender" placeholder="Gender" value="{{ request.GET.gender }}">
-    <input name="country" placeholder="Country" value="{{ request.GET.country }}">
-    <input name="age_group" placeholder="Age Group" value="{{ request.GET.age_group }}">
+    <select name="gender">
+        <option value="">All Genders</option>
+        <option value="male" {% if request.GET.gender == "male" %}selected{% endif %}>Male</option>
+        <option value="female" {% if request.GET.gender == "female" %}selected{% endif %}>Female</option>
+    </select>
+
+    <input name="country_id" 
+           placeholder="Country name or code e.g. Nigeria, NG" 
+           value="{{ request.GET.country_id }}">
+
+    <select name="age_group">
+        <option value="">All Age Groups</option>
+        <option value="child" {% if request.GET.age_group == "child" %}selected{% endif %}>Child</option>
+        <option value="teenager" {% if request.GET.age_group == "teenager" %}selected{% endif %}>Teenager</option>
+        <option value="adult" {% if request.GET.age_group == "adult" %}selected{% endif %}>Adult</option>
+        <option value="senior" {% if request.GET.age_group == "senior" %}selected{% endif %}>Senior</option>
+    </select>
+
     <button type="submit" class="btn">Filter</button>
 </form>
 <br>
