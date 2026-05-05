@@ -174,7 +174,7 @@ def profile_import(request):
         else:
             token = request.session.get("access_token")
             response = httpx.post(
-                f"{API}/api/profiles/import/",
+                f"{API}/api/profiles/import",
                 files={"file": (file.name, file.read(), "text/csv")},
                 headers={
                     "Authorization": f"Bearer {token}",
@@ -209,7 +209,7 @@ def profile_create(request):
         else:
             token = request.session.get("access_token")
             response = httpx.post(
-                f"{API}/api/profiles/",
+                f"{API}/api/profiles",
                 json={"name": name},
                 headers={
                     "Authorization": f"Bearer {token}",
