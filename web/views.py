@@ -2,6 +2,7 @@ import httpx
 from django.shortcuts import render, redirect
 from django.conf import settings
 from django.views.decorators.http import require_GET, require_POST
+import pycountry
 
 API = settings.API_BASE_URL
 
@@ -81,8 +82,26 @@ def dashboard(request):
     })
 
 
+
+def resolve_country_id(value):
+    if not value:
+        return None
+    value = value.strip()
+    if len(value) == 2:
+        return value.upper()
+    try:
+        results = pycountry.countries.search_fuzzy(value)
+        return results[0].alpha_2 if results else value
+    except LookupError:
+        return value
+
+
 def profile_list(request):
     params = {k: v for k, v in request.GET.items() if v}
+
+    if "country_id" in params:
+        params["country_id"] = resolve_country_id(params["country_id"])
+
     params.setdefault("page", 1)
     params.setdefault("limit", 10)
 
