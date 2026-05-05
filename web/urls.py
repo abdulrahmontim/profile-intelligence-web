@@ -9,9 +9,9 @@ urlpatterns = [
     path("logout", views.logout, name="logout"),
     path("dashboard", views.dashboard, name="dashboard"),
     path("profiles", views.profile_list, name="profiles"),
+    path("profiles/import", views.profile_import, name="profile_import"),
+    path("profiles/create", views.profile_create, name="profile_create"),
     path("profiles/<str:profile_id>", views.profile_detail, name="profile_detail"),
     path("search", views.search, name="search"),
     path("account", views.account, name="account"),
-    path("profiles/import", views.profile_import, name="profile_import"),
-    path("profiles/create", views.profile_create, name="profile_create")
 ]
