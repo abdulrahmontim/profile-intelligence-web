@@ -82,7 +82,7 @@ def dashboard(request):
 
 
 def profile_list(request):
-    params = {k: v for k, v in request.GET.items()}
+    params = {k: v for k, v in request.GET.items() if v}
     params.setdefault("page", 1)
     params.setdefault("limit", 10)
 
