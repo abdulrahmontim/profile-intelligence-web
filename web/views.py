@@ -10,7 +10,6 @@ import pycountry
 API = settings.API_BASE_URL
 
 # Create your views here.
-
 def require_admin(view_func):
     def wrapper(request, *args, **kwargs):
         if request.session.get("role") != "admin":
@@ -18,42 +17,47 @@ def require_admin(view_func):
         return view_func(request, *args, **kwargs)
     return wrapper
 
-
-def api_get(request, path, params=None):
-    token = request.session.get("access_token")
-    return httpx.get(
-        f"{API}{path}",
-        params=params,
-        headers={
-            "Authorization": f"Bearer {token}",
-            "X-API-Version": "1",
-        },
-        timeout=10,
-    )
-
-
-def refresh_session(request) -> bool:
+def refresh_session(request):
     refresh_token = request.session.get("refresh_token")
     if not refresh_token:
         return False
 
-    response = httpx.post(f"{API}/auth/refresh",
-                         json={"refresh_token": refresh_token})
+    response = httpx.post(f"{API}/auth/refresh", json={"refresh_token": refresh_token})
+    
     if response.status_code == 200:
         data = response.json()
         request.session["access_token"] = data["access_token"]
         request.session["refresh_token"] = data["refresh_token"]
+        request.session.modified = True
         return True
+        
     return False
 
+def make_api_call(request, method, path, **kwargs):
+    token = request.session.get("access_token")
+    
+    headers = kwargs.pop("headers", {})
+    headers.update({
+        "Authorization": f"Bearer {token}",
+        "X-API-Version": "1",
+    })
+    
+    url = f"{API}{path}"
+    response = httpx.request(method, url, headers=headers, **kwargs)
+    
+    if response.status_code == 401:
+        if refresh_session(request):
+            new_token = request.session.get("access_token")
+            headers["Authorization"] = f"Bearer {new_token}"
+            response = httpx.request(method, url, headers=headers, **kwargs)
+            
+    return response
 
 def login(request):
     return render(request, "web/login.html")
 
-
 def github_redirect(request):
     return redirect(f"{API}/auth/github")
-
 
 def auth_callback(request):
     access_token = request.GET.get("access_token")
@@ -71,7 +75,6 @@ def auth_callback(request):
 
     return redirect("/dashboard")
 
-
 def logout(request):
     refresh_token = request.session.get("refresh_token")
     if refresh_token:
@@ -79,21 +82,17 @@ def logout(request):
     request.session.flush()
     return redirect("/login")
 
-
 def dashboard(request):
-    response = api_get(request, "/api/profiles", {"limit": 1})
+    response = make_api_call(request, "GET", "/api/profiles", params={"limit": 1})
+    
     if response.status_code == 401:
-        if not refresh_session(request):
-            return redirect("/login")
-        response = api_get(request, "/api/profiles", {"limit": 1})
+        return redirect("/login")
 
     total = response.json().get("total", 0)
     return render(request, "web/dashboard.html", {
         "total_profiles": total,
         "username": request.session.get("username"),
     })
-
-
 
 def resolve_country_id(value):
     if not value:
@@ -107,7 +106,6 @@ def resolve_country_id(value):
     except LookupError:
         return value
 
-
 def profile_list(request):
     params = {k: v for k, v in request.GET.items() if v}
 
@@ -117,11 +115,10 @@ def profile_list(request):
     params.setdefault("page", 1)
     params.setdefault("limit", 10)
 
-    response = api_get(request, "/api/profiles", params)
+    response = make_api_call(request, "GET", "/api/profiles", params=params)
+    
     if response.status_code == 401:
-        if not refresh_session(request):
-            return redirect("/login")
-        response = api_get(request, "/api/profiles", params)
+        return redirect("/login")
 
     data = response.json()
     current_page = int(params["page"])
@@ -137,29 +134,32 @@ def profile_list(request):
         "next_url": build_url(current_page + 1) if current_page < total_pages else None,
     })
 
-
 def profile_detail(request, profile_id):
-    response = api_get(request, f"/api/profiles/{profile_id}")
+    response = make_api_call(request, "GET", f"/api/profiles/{profile_id}")
+    if response.status_code == 401:
+        return redirect("/login")
+        
     profile = response.json().get("data", {})
     return render(request, "web/profile_detail.html", {"profile": profile})
-
 
 def search(request):
     query = request.GET.get("q", "")
     results = []
     if query:
-        response = api_get(request, "/api/profiles/search", {"q": query})
+        response = make_api_call(request, "GET", "/api/profiles/search", params={"q": query})
+        if response.status_code == 401:
+            return redirect("/login")
+            
         results = response.json().get("data", [])
+        
     return render(request, "web/search.html", {"results": results, "query": query})
-
 
 def account(request):
     return render(request, "web/account.html", {
         "username": request.session.get("username"),
         "role": request.session.get("role"),
     })
-    
-    
+
 @require_admin
 def profile_import(request):
     result = None
@@ -172,17 +172,17 @@ def profile_import(request):
             message = "No file selected"
             message_type = "error"
         else:
-            token = request.session.get("access_token")
-            response = httpx.post(
-                f"{API}/api/profiles/import",
+            response = make_api_call(
+                request, 
+                "POST", 
+                "/api/profiles/import",
                 files={"file": (file.name, file.read(), "text/csv")},
-                headers={
-                    "Authorization": f"Bearer {token}",
-                    "X-API-Version": "1",
-                },
-                timeout=300,
+                timeout=300
             )
-            if response.status_code == 200:
+            
+            if response.status_code == 401:
+                return redirect("/login")
+            elif response.status_code == 200:
                 result = response.json()
             else:
                 message = "Upload failed. Please try again."
@@ -193,7 +193,6 @@ def profile_import(request):
         "message": message,
         "message_type": message_type,
     })
-
 
 @require_admin
 def profile_create(request):
@@ -207,16 +206,17 @@ def profile_create(request):
             message = "Name is required"
             message_type = "error"
         else:
-            token = request.session.get("access_token")
-            response = httpx.post(
-                f"{API}/api/profiles",
+            response = make_api_call(
+                request,
+                "POST",
+                "/api/profiles",
                 json={"name": name},
-                headers={
-                    "Authorization": f"Bearer {token}",
-                    "X-API-Version": "1",
-                },
-                timeout=30,
+                timeout=30
             )
+            
+            if response.status_code == 401:
+                return redirect("/login")
+
             data = response.json()
             if response.status_code in (200, 201):
                 profile = data.get("data")
