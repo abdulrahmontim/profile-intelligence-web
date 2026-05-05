@@ -20,6 +20,7 @@ def require_admin(view_func):
 def refresh_session(request):
     refresh_token = request.session.get("refresh_token")
     if not refresh_token:
+        request.session.flush()
         return False
 
     response = httpx.post(f"{API}/auth/refresh", json={"refresh_token": refresh_token})
@@ -31,6 +32,7 @@ def refresh_session(request):
         request.session.modified = True
         return True
         
+    request.session.flush()
     return False
 
 def make_api_call(request, method, path, **kwargs):
@@ -54,6 +56,9 @@ def make_api_call(request, method, path, **kwargs):
     return response
 
 def login(request):
+    if request.session.get("access_token"):
+        return redirect("/dashboard")
+        
     return render(request, "web/login.html")
 
 def github_redirect(request):
@@ -155,6 +160,9 @@ def search(request):
     return render(request, "web/search.html", {"results": results, "query": query})
 
 def account(request):
+    if not request.session.get("access_token"):
+        return redirect("/login")
+        
     return render(request, "web/account.html", {
         "username": request.session.get("username"),
         "role": request.session.get("role"),
