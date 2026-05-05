@@ -7,5 +7,15 @@
     {% endfor %}
 </table>
 <br>
-<a href="/profiles" class="btn">Back</a>
+
+<div style="display: flex; gap: 10px; align-items: center;">
+    <a href="/profiles" class="btn">Back</a>
+    
+    {% if request.session.role == "admin" %}
+    <form action="/profiles/{{ profile.id }}/delete" method="POST" onsubmit="return confirm('Are you sure you want to delete this profile? This cannot be undone.');" style="margin: 0;">
+        {% csrf_token %}
+        <button type="submit" class="btn danger">Delete Profile</button>
+    </form>
+    {% endif %}
+</div>
 {% endblock %}

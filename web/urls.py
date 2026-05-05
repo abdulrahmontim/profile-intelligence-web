@@ -12,6 +12,7 @@ urlpatterns = [
     path("profiles/import", views.profile_import, name="profile_import"),
     path("profiles/create", views.profile_create, name="profile_create"),
     path("profiles/<str:profile_id>", views.profile_detail, name="profile_detail"),
+    path('profiles/<str:profile_id>/delete', views.profile_delete, name='profile_delete'),
     path("search", views.search, name="search"),
     path("account", views.account, name="account"),
 ]

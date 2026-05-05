@@ -26,14 +26,23 @@
 <br>
 
 <table>
-    <tr><th>Name</th><th>Gender</th><th>Age</th><th>Country</th><th></th></tr>
+    <tr><th>Name</th><th>Gender</th><th>Age</th><th>Country</th><th>Actions</th></tr>
     {% for p in data.data %}
     <tr>
         <td>{{ p.name }}</td>
         <td>{{ p.gender }}</td>
         <td>{{ p.age }}</td>
         <td>{{ p.country_name }}</td>
-        <td><a href="/profiles/{{ p.id }}">View</a></td>
+        <td style="display: flex; gap: 15px; border-bottom: none;">
+            <a href="/profiles/{{ p.id }}">View</a>
+            
+            {% if request.session.role == "admin" %}
+            <form action="/profiles/{{ p.id }}/delete" method="POST" onsubmit="return confirm('Delete {{ p.name }}?');" style="margin: 0;">
+                {% csrf_token %}
+                <button type="submit" style="background: none; border: none; color: #e74c3c; cursor: pointer; text-decoration: underline; padding: 0; font-size: 1rem;">Delete</button>
+            </form>
+            {% endif %}
+        </td>
     </tr>
     {% empty %}
     <tr><td colspan="5">No profiles found.</td></tr>

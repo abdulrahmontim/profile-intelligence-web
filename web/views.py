@@ -231,3 +231,17 @@ def profile_create(request):
         "message": message,
         "message_type": message_type,
     })
+
+
+
+@require_admin
+@require_POST
+def profile_delete(request, profile_id):
+    
+    response = make_api_call(request, "DELETE", f"/api/profiles/{profile_id}")
+    
+    if response.status_code == 401:
+        return redirect("/login")
+    
+    return redirect("/profiles")
+
